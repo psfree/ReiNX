@@ -16,3 +16,6 @@
 #define ADRP(r, o) 0x90000000 | ((((o) >> 12) & 0x3) << 29) | ((((o) >> 12) & 0x1FFFFC) << 3) | ((r) & 0x1F)
 
 void firmware();
+
+int reload_status=0;
+void set_reloaded();

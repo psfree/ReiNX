@@ -407,6 +407,34 @@ void launch() {
     while (1) FLOW_CTLR(0x4) = 0x50000000;
 }
 
+extern u32 __ipl_end;
+void set_reloaded() {
+	reload_status=1;
+}
+
+void reloader() {
+	if(reload_status!=1) {
+		print("reloader is running\n");
+		if(fopen("/ReiNX/ReiNX.bin", "rb") != 0) {
+			print("loaded file\n");
+			size_t size = fsize();
+			char * buf = malloc(size);
+			fread(buf, size, 1);
+			fclose();
+			print("read file\n");
+			char pattern[8] = { 0x08, 0x00, 0x4F, 0xE2, 0x68, 0x10, 0x9F, 0xE5 };
+			u32 addr = memsearch(buf, 0x200, pattern, sizeof(pattern));
+			if(addr != 0) {
+				print("found pattern %x %x\n", addr, buf);
+				void (*func)() = addr;
+				(*func)();
+				print("never go here");
+			}
+			
+		}
+	}
+}
+
 void firmware() {
     display_init();
     gfx_init_ctxt(&gfx_ctxt, display_init_framebuffer(), 720, 1280, 768);
@@ -420,6 +448,7 @@ void firmware() {
     }
 
     print("Welcome to ReiNX %s!\n", VERSION);
+	reloader();
     loadFirm();
     drawSplash();
     launch();

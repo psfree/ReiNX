@@ -26,6 +26,9 @@
 .extern ipl_main
 .type ipl_main, %function
 
+.extern rel_start
+.type rel_start, %function
+
 .globl _start
 .type _start, %function
 _start:
@@ -73,6 +76,7 @@ _real_start:
 	BL bootloader
 	BL firmware
 	B .
+	
 
 .globl rebootRCM
 .type rebootRCM, %function
@@ -88,3 +92,51 @@ rebootRCM:
 	ORRS    R3, R1
 	MOVS    R0, #0
 	STR     R3, [R2]
+
+.globl lolfunc
+.type lolfunc, %function
+lolfunc:
+	add r0, r0, r1
+	MOV PC, LR
+	
+.globl rel_start
+.type rel_start, %function
+rel_start:
+	ADR R0, rel_start
+	LDR R1, =__ipl_start
+	CMP R0, R1
+	BEQ _rel_start
+	
+	/* If we are not in the right location already, copy a relocator to upper IRAM. */
+	ADR R2, _reloc_ipl
+	LDR R3, =0x4003FF00
+	MOV R4, #(_rel_start - _reloc_ipl)
+rel_copy_loop:
+	LDMIA R2!, {R5}
+	STMIA R3!, {R5}
+	SUBS R4, #4
+	BNE rel_copy_loop
+
+	/* Use the relocator to copy ourselves into the right place. */
+	LDR R2, =__ipl_end
+	SUB R2, R2, R1
+	LDR R3, =_rel_start
+	LDR R4, =0x4003FF00
+	BX R4
+	
+_rel_start:
+	/* Initially, we place our stack in IRAM but will move it to SDRAM later. */
+	LDR SP, =0x4003FF00
+	LDR R0, =__bss_start
+	EOR R1, R1, R1
+	LDR R2, =__bss_end
+	SUB R2, R2, R0
+	BL memset
+	LDR R0, =0x90020000
+	BL heap_init
+	BL set_reloaded
+	BL bootrom
+	BL bootloader
+	BL firmware
+	B .
+	
