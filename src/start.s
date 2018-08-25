@@ -135,8 +135,6 @@ _rel_start:
 	LDR R0, =0x90020000
 	BL heap_init
 	BL set_reloaded
-	BL bootrom
-	BL bootloader
 	BL firmware
 	B .
 	

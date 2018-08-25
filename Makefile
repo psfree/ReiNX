@@ -17,7 +17,7 @@ dir_out := out
 dir_sysmod := NX_Sysmodules
 
 ARCH := -march=armv4t -mtune=arm7tdmi -mthumb -mthumb-interwork
-CFLAGS = $(ARCH) -Os -nostdlib -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-inline -fno-builtin -std=gnu11# -Wall
+CFLAGS = $(ARCH) -Os -nostdlib -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-inline -fno-builtin -std=gnu11# -Wall 
 LDFLAGS = $(ARCH) -nostartfiles -lgcc -Wl,--nmagic,--gc-sections
 
 objects =	$(patsubst $(dir_source)/%.s, $(dir_build)/%.o, \
@@ -42,7 +42,6 @@ clean:
 	@echo "clean ..."
 	@rm -rf $(dir_build)
 	@rm -rf $(dir_out)
-	@$(MAKE) -C $(dir_sysmod) clean
 
 $(dir_out)/sysmodules: $(dir_sysmod)
 	@$(MAKE) -C $(dir_sysmod)
