@@ -144,6 +144,27 @@ void patch(pk11_offs *pk11, pkg2_hdr_t *pkg2, link_t *kips) {
 				}
 			}
 		}
+		
+		//TODO: implement memsearch patching
+		//int nca_patch(u8 * kipdata, u64 kipdata_len) {
+		/* char pattern[8] = {0xE5, 0x07, 0x00, 0x32, 0xE0, 0x03, 0x16, 0xAA};
+		char buf[0x10];
+		memcpy(buf, kipdata+0x1C450, 0x10);
+		u32 * addr = memsearch(kipdata, kipdata_len, pattern, sizeof(pattern));
+		int ret=0;
+		int max_dist = 0x10;
+		for(int i=0; i<max_dist; i++) {
+			u32 op = addr[i];
+			if((op & 0xFC000000)==0x94000000) { //is a BL op
+				addr[i] = NOP;
+				ret=1;
+				break;
+			}
+		}
+			return ret;
+		}
+			 */
+		
     }
 
     u8 kipHash[0x20];
@@ -390,6 +411,19 @@ void launch() {
     // Halt ourselves in waitevent state.
     while (1) FLOW_CTLR(0x4) = 0x50000000;
 }
+
+void set_reloaded() {
+	reload_status=1;
+}
+extern void pivot_stack(u32 stack_top);
+
+void chainboot() {
+	config_hw();
+	
+	pivot_stack(0x90010000);
+	heap_init(0x90020000);
+}
+
 
 void firmware() {
     display_init();

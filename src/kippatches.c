@@ -70,7 +70,7 @@ int nca_patch(u8 * kipdata, u64 kipdata_len) {
 	char pattern[8] = {0xE5, 0x07, 0x00, 0x32, 0xE0, 0x03, 0x16, 0xAA};
 	char buf[0x10];
 	memcpy(buf, kipdata+0x1C450, 0x10);
-	u32 * addr = memsearch(kipdata, kipdata_len, pattern, sizeof(pattern));
+	u32 * addr = (u32 *)memsearch(kipdata, kipdata_len, pattern, sizeof(pattern));
 	int ret=0;
 	int max_dist = 0x10;
 	for(int i=0; i<max_dist; i++) {
