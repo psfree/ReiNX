@@ -39,6 +39,16 @@ u32 sd_mount() {
     return 0;
 }
 
+void sd_unmount()
+{
+	if (sd_mounted)
+	{
+		f_mount(NULL, "", 1);
+		sdmmc_storage_end(&sd_storage);
+		sd_mounted = 0;
+	}
+}
+
 u32 fopen(const char *path, const char *mode) {
     u32 m = (mode[0] == 0x77 ? (FA_WRITE|FA_CREATE_NEW) : FA_READ);
     if (f_open(&fp, path, m) != FR_OK) 

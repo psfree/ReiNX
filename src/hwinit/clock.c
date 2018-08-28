@@ -161,6 +161,10 @@ void clock_enable_cl_dvfs()
 {
 	clock_enable(&_clock_cl_dvfs);
 }
+void clock_disable_cl_dvfs()
+{
+	clock_disable(&_clock_cl_dvfs);
+}
 
 void clock_enable_coresight()
 {

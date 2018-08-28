@@ -73,12 +73,14 @@ _real_start:
 	LDR R2, =__bss_end
 	SUB R2, R2, R0
 	BL memset
-	LDR R0, =0x90020000
-	BL heap_init
-	BL bootrom
-	BL bootloader
-	BL firmware
+	BL chainboot
 	B .
+	
+.globl pivot_stack
+.type pivot_stack, %function
+pivot_stack:
+	MOV SP, R0
+	BX LR
 
 	
 	.globl lolfunc

@@ -45,3 +45,13 @@ u32 get_unit_type() {
 u32 master_key_ver() {
     return FUSE(FUSE_SPARE_BIT_5) & 1;
 }
+
+void fuse_disable_program()
+{
+	FUSE(FUSE_DISABLEREGPROGRAM) = 1;
+}
+
+u32 fuse_read_odm(u32 idx)
+{
+	return FUSE(FUSE_RESERVED_ODMX(idx));
+}

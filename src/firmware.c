@@ -24,8 +24,22 @@
 #include "error.h"
 #include "firmware.h"
 #include "kippatches.h"
+#include "bootrom.h"
+#include "bootloader.h"
+
+#include "hwinit/ff.h"
+
+
 
 #define VERSION "v1.0"
+
+#define PAYLOAD_START 0x40003000
+#define EXT_PAYLOAD_ADDR 0xC03C0000
+#define PATCHED_RELOC_SZ 0x94
+#define RCM_PAYLOAD_ADDR (EXT_PAYLOAD_ADDR + ALIGN(PATCHED_RELOC_SZ, 0x10))
+#define PAYLOAD_ENTRY 0x40010000
+#define CBFS_SDRAM_EN_ADDR 0x4003e000
+#define COREBOOT_ADDR (0xD0000000 - 0x100000)
 
 static pk11_offs *pk11Offs = NULL;
 
@@ -389,7 +403,7 @@ void launch() {
     }
 
     // TODO: Don't Clear 'BootConfig' for retail >1.0.0.
-    //memset((void *)0x4003D000, 0, 0x3000);
+    //hwinitset((void *)0x4003D000, 0, 0x3000);
 
     SE_lock();
 
@@ -412,16 +426,127 @@ void launch() {
     while (1) FLOW_CTLR(0x4) = 0x50000000;
 }
 
+void reconfig_hw_workaround(int extra_reconfig)
+{
+	// Re-enable clocks to Audio Processing Engine as a workaround to hanging.
+	CLOCK(CLK_RST_CONTROLLER_CLK_OUT_ENB_V) |= 0x400; // Enable AHUB clock.
+	CLOCK(CLK_RST_CONTROLLER_CLK_OUT_ENB_Y) |= 0x40;  // Enable APE clock.
+
+	if (extra_reconfig)
+	{
+		PMC(APBDEV_PMC_PWR_DET_VAL) |= (1 << 12);
+
+		clock_disable_cl_dvfs();
+
+		// Disable Joy-con GPIOs.
+		gpio_config(GPIO_PORT_G, GPIO_PIN_0, GPIO_MODE_SPIO);
+		gpio_config(GPIO_PORT_D, GPIO_PIN_1, GPIO_MODE_SPIO);
+		gpio_config(GPIO_PORT_E, GPIO_PIN_6, GPIO_MODE_SPIO);
+		gpio_config(GPIO_PORT_H, GPIO_PIN_6, GPIO_MODE_SPIO);
+	}
+}
+
+void reloc_patcher(u32 payload_size)
+{
+	const u32 START_OFF = 0x7C;
+	const u32 PAYLOAD_END_OFF = 0x84;
+	const u32 IPL_START_OFF = 0x88;
+
+	memcpy((u8 *)EXT_PAYLOAD_ADDR, (u8 *)PAYLOAD_START, PATCHED_RELOC_SZ);
+
+	*(vu32 *)(EXT_PAYLOAD_ADDR + START_OFF) = PAYLOAD_ENTRY - ALIGN(PATCHED_RELOC_SZ, 0x10);
+	*(vu32 *)(EXT_PAYLOAD_ADDR + PAYLOAD_END_OFF) = PAYLOAD_ENTRY + payload_size;
+	*(vu32 *)(EXT_PAYLOAD_ADDR + IPL_START_OFF) = PAYLOAD_ENTRY;
+
+	if (payload_size == 0x7000)
+	{
+		memcpy((u8 *)(EXT_PAYLOAD_ADDR + ALIGN(PATCHED_RELOC_SZ, 0x10)), (u8 *)COREBOOT_ADDR, 0x7000); //Bootblock
+		*(vu32 *)CBFS_SDRAM_EN_ADDR = 0x4452414D;
+	}
+}
+
+void (*ext_payload_ptr)() = (void *)EXT_PAYLOAD_ADDR;
+
+int relaunch()
+{
+	char * path = "/ReiNX.bin";
+	if (!path) return 1;
+
+	if (sd_mount())
+	{
+		FIL fp;
+		if (f_open(&fp, path, FA_READ))
+		{
+			sd_unmount();
+			return 1;
+		}
+
+		// Read and copy the payload to our chosen address
+		void *buf;
+		u32 size = f_size(&fp);
+
+		if (size < 0x30000)
+			buf = (void *)RCM_PAYLOAD_ADDR;
+		else
+			buf = (void *)COREBOOT_ADDR;
+
+		if (f_read(&fp, buf, size, NULL))
+		{
+			f_close(&fp);
+			sd_unmount();
+
+			return 1;
+		}
+
+		f_close(&fp);
+		free(path);
+
+		sd_unmount();
+
+		if (size < 0x30000)
+		{
+			reconfig_hw_workaround(0);
+		}
+		else
+		{
+			reloc_patcher(0x7000);
+			if (*(vu32 *)CBFS_SDRAM_EN_ADDR != 0x4452414D)
+				return 1;
+			reconfig_hw_workaround(1);
+		}
+
+		// Launch our payload.
+		(*ext_payload_ptr)();
+	}
+
+	return 1;
+}
+
+
 void set_reloaded() {
 	reload_status=1;
 }
 extern void pivot_stack(u32 stack_top);
 
 void chainboot() {
-	config_hw();
+	//config_hw();
+	bootrom();
+	SYSREG(AHB_AHB_SPARE_REG) = (volatile vu32)0xFFFFFF9F;
+	PMC(APBDEV_PMC_SCRATCH49) = ((PMC(APBDEV_PMC_SCRATCH49) >> 1) << 1) & 0xFFFFFFFD;
+	mbist_workaround();
+	clock_enable_se();
+	
+	clock_enable_fuse(1);
+	fuse_disable_program();
+	
+	mc_enable();
+	
+	setup();
 	
 	pivot_stack(0x90010000);
 	heap_init(0x90020000);
+	
+	relaunch();
 }
 
 

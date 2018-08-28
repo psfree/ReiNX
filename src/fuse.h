@@ -19,3 +19,5 @@
 u32 get_unknown_config();
 u32 get_unit_type();
 u32 master_key_ver();
+void fuse_disable_program();
+u32 fuse_read_odm(u32 idx);

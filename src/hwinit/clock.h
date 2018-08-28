@@ -141,6 +141,7 @@ void clock_disable_sor1();
 void clock_enable_kfuse();
 void clock_disable_kfuse();
 void clock_enable_cl_dvfs();
+void clock_disable_cl_dvfs();
 void clock_enable_coresight();
 void clock_sdmmc_config_clock_source(u32 *pout, u32 id, u32 val);
 void clock_sdmmc_get_params(u32 *pout, u16 *pdivisor, u32 type);
