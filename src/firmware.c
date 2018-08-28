@@ -33,7 +33,7 @@
 
 #define VERSION "v1.0"
 
-#define PAYLOAD_START 0x40003000
+#define PAYLOAD_START 0x40008000
 #define EXT_PAYLOAD_ADDR 0xC03C0000
 #define PATCHED_RELOC_SZ 0x94
 #define RCM_PAYLOAD_ADDR (EXT_PAYLOAD_ADDR + ALIGN(PATCHED_RELOC_SZ, 0x10))
@@ -477,6 +477,7 @@ int relaunch()
 		FIL fp;
 		if (f_open(&fp, path, FA_READ))
 		{
+			//TODO: continue booting payload instead
 			sd_unmount();
 			return 1;
 		}
@@ -528,6 +529,19 @@ void set_reloaded() {
 }
 extern void pivot_stack(u32 stack_top);
 
+FIL * logfile;
+
+int createlog() {
+	if(f_open(logfile, "/chainlog.txt", FA_WRITE)) {
+		return 1;
+	}
+	return -1;
+}
+
+int closelog() {
+	f_close(logfile);
+}
+
 void chainboot() {
 	//config_hw();
 	bootrom();
@@ -546,7 +560,17 @@ void chainboot() {
 	pivot_stack(0x90010000);
 	heap_init(0x90020000);
 	
-	relaunch();
+	createlog();
+
+	f_printf(logfile, "Logging works: %lx\n", PMC(APBDEV_PMC_SCRATCH51));
+	
+	closelog();
+	while (!sd_mount()) {
+        if (btn_wait() & BTN_POWER)
+            i2c_send_byte(I2C_5, 0x3C, MAX77620_REG_ONOFFCNFG1, MAX77620_ONOFFCNFG1_PWR_OFF);
+        btn_wait();
+    }
+	//relaunch();
 }
 
 
