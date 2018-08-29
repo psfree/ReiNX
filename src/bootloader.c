@@ -129,7 +129,7 @@ void config_gpios() {
 
 void setup() {
     config_oscillators();
-    APB_MISC(0x40) = 0;
+    APB_MISC(APB_MISC_PP_PINMUX_GLOBAL) = 0;
     config_gpios();
     
     if (get_unit_type() == 0) {
@@ -140,8 +140,8 @@ void setup() {
     clock_enable_i2c(I2C_1);
     clock_enable_i2c(I2C_5);
 
-    static const clock_t clock_unk1 = { 0x358, 0x360, 0x42C, 0x1F, 0, 0 };
-    static const clock_t clock_unk2 = { 0x358, 0x360, 0, 0x1E, 0, 0 };
+    static const clock_t clock_unk1 = { CLK_RST_CONTROLLER_RST_DEVICES_V, CLK_RST_CONTROLLER_CLK_OUT_ENB_V, 0x42C, 0x1F, 0, 0 };
+    static const clock_t clock_unk2 = { CLK_RST_CONTROLLER_RST_DEVICES_V, CLK_RST_CONTROLLER_CLK_OUT_ENB_V, 0, 0x1E, 0, 0 };
     clock_enable(&clock_unk1);
     clock_enable(&clock_unk2);
 
@@ -165,12 +165,12 @@ void setup() {
     config_pmc_scratch();
 
     CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) = CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) & 0xFFFF8888 | 0x3333;
-
+	//TODO: deduce why this is different from hekate - has more registers set
     mc_config_carveout();
 
     sdram_init();
     
-    sdram_lp0_save_params(sdram_get_params());
+    //sdram_lp0_save_params(sdram_get_params());
 }
 
 void bootloader() { 
@@ -186,7 +186,7 @@ void bootloader() {
     check_config_fuses();
 
     // Disables fuse programming until next reboot
-    FUSE(FUSE_PRIVATEKEYDISABLE) = 0x10;
+    //FUSE(FUSE_PRIVATEKEYDISABLE) = 0x10;
 
     // Setup memory controllers
     mc_enable();

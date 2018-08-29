@@ -532,49 +532,61 @@ extern void pivot_stack(u32 stack_top);
 FIL * logfile;
 
 int createlog() {
-	if(f_open(logfile, "/chainlog.txt", FA_WRITE)) {
+	if(f_open(logfile, "chainlog.txt", FA_WRITE)) {
 		return 1;
 	}
-	return -1;
+	return 0;
 }
 
 int closelog() {
 	f_close(logfile);
 }
 
-void chainboot() {
+/* void chainboot() {
 	//config_hw();
 	bootrom();
 	SYSREG(AHB_AHB_SPARE_REG) = (volatile vu32)0xFFFFFF9F;
 	PMC(APBDEV_PMC_SCRATCH49) = ((PMC(APBDEV_PMC_SCRATCH49) >> 1) << 1) & 0xFFFFFFFD;
-	mbist_workaround();
-	clock_enable_se();
-	
-	clock_enable_fuse(1);
-	fuse_disable_program();
-	
-	mc_enable();
-	
-	setup();
-	
+	bootloader();
 	pivot_stack(0x90010000);
-	heap_init(0x90020000);
 	
-	createlog();
+	display_init();
+    gfx_init_ctxt(&gfx_ctxt, display_init_framebuffer(), 720, 1280, 768);
+    gfx_clear_color(&gfx_ctxt, 0xFF000000);
+    gfx_con_init(&gfx_con, &gfx_ctxt);
+    gfx_con_setcol(&gfx_con, ORANGE, 0, 0);
 
-	f_printf(logfile, "Logging works: %lx\n", PMC(APBDEV_PMC_SCRATCH51));
-	
-	closelog();
-	while (!sd_mount()) {
+    while (!sd_mount()) {
+        error("Failed to init SD card!\n");
+        print("Press POWER to power off, any other key to retry\n");
         if (btn_wait() & BTN_POWER)
             i2c_send_byte(I2C_5, 0x3C, MAX77620_REG_ONOFFCNFG1, MAX77620_ONOFFCNFG1_PWR_OFF);
         btn_wait();
     }
+	print("Welcome to ReiNX %s!\n", VERSION);
+	if(createlog()) {
+		print("bad stuff!\n", VERSION);
+	}
+
+	f_printf(logfile, "Logging works: %lx\n", PMC(APBDEV_PMC_SCRATCH51));
+	closelog();
+
+	usleep(3000000);
 	//relaunch();
-}
+	sd_unmount();
+	//rel_start();
+	
+	panic();
+} */
 
 
 void firmware() {
+	bootrom();
+	SYSREG(AHB_AHB_SPARE_REG) = (volatile vu32)0xFFFFFF9F;
+	PMC(APBDEV_PMC_SCRATCH49) = ((PMC(APBDEV_PMC_SCRATCH49) >> 1) << 1) & 0xFFFFFFFD;
+	bootloader();
+	pivot_stack(0x90010000);
+	
     display_init();
     gfx_init_ctxt(&gfx_ctxt, display_init_framebuffer(), 720, 1280, 768);
     gfx_clear_color(&gfx_ctxt, 0xFF000000);
