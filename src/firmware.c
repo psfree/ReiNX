@@ -103,6 +103,16 @@ void patch(pk11_offs *pk11, pkg2_hdr_t *pkg2, link_t *kips) {
                 sha2_ptr = (uPtr*)memsearch((void *)pk11->secmon_base, 0x10000, sha2Pattern, sizeof(sha2Pattern));
                 break;
             }
+			case KB_FIRMWARE_VERSION_600:
+				u8 verPattern[] = {0x00, 0x01, 0x00, 0x36, 0xFD, 0x7B, 0x41, 0xA9};
+                u8 hdrSigPattern[] = {0x86, 0xFE, 0xFF, 0x97, 0x80, 0x00, 0x00, 0x36};
+                u8 sha2Pattern[] = {0xF2, 0xFB, 0xFF, 0x97, 0xE0, 0x03};
+
+                ver_ptr = (uPtr*)memsearch((void *)pk11->secmon_base, 0x10000, verPattern, sizeof(verPattern));
+                pk21_ptr = (uPtr*)((u32)ver_ptr - 0xC);
+                hdrsig_ptr = (uPtr*)(memsearch((void *)pk11->secmon_base, 0x10000, hdrSigPattern, sizeof(hdrSigPattern)) + 0x4);
+                sha2_ptr = (uPtr*)memsearch((void *)pk11->secmon_base, 0x10000, sha2Pattern, sizeof(sha2Pattern));
+                break;
             default: {
                 u8 verPattern[] = {0x00, 0x01, 0x00, 0x36, 0xFD, 0x7B, 0x41, 0xA9};
                 u8 hdrSigPattern[] = {0x86, 0xFE, 0xFF, 0x97, 0x80, 0x00, 0x00, 0x36};
@@ -255,6 +265,7 @@ int keygen(u8 *keyblob, u32 fwVer, void *tsec_fw) {
         break;
 
         case KB_FIRMWARE_VERSION_500:
+		case KB_FIRMWARE_VERSION_600:
         default:
             se_aes_unwrap_key(0x0A, 0x0F, console_keyseed_4xx);
             se_aes_unwrap_key(0x0F, 0x0F, console_keyseed);
