@@ -46,6 +46,8 @@
 #define ID_RCV_OFF_400 0x28F6C
 #define ID_RCV_OFF_500 0x28DAC
 
+#define NOP 0xD503201F
+#define ADRP(r, o) 0x90000000 | ((((o) >> 12) & 0x3) << 29) | ((((o) >> 12) & 0x1FFFFC) << 3) | ((r) & 0x1F)
 
 static u8 customSecmon = 0;
 static u8 customWarmboot = 0;
@@ -324,6 +326,32 @@ static const pkg2_kernel_id_t _pkg2_kernel_ids[] =
 	{ 0, 0 }                              //End.
 };
 
+typedef struct kipdiff_s {
+  u64 offset;              // offset from start of kip's .text segment
+  u32 len;                 // length of below strings, NULL signifies end of patch
+  const char *orig_bytes;  // original byte string (this must match exactly)
+  const char *patch_bytes; // replacement byte string (same length)
+} kipdiff_t;
+
+// a single patch for a particular kip version
+typedef struct kippatch_s {
+  const char *name;        // name/id of the patch, NULL signifies end of patchset
+  kipdiff_t *diffs;        // array of kipdiff_t's to apply
+} kippatch_t;
+
+// a group of patches that patch several different things in a particular kip version
+typedef struct kippatchset_s {
+  const char *kip_name;    // name/id of the kip, NULL signifies end of patchset list
+  const char *kip_hash;    // sha256 of the right version of the kip
+  kippatch_t *patches;     // set of patches for this version of the kip
+} kippatchset_t;
+
+
+extern kippatchset_t kip_patches[];
+void ReadPackage1(sdmmc_storage_t *storage, void *pk11);
+int kippatch_apply(u8 *kipdata, u64 kipdata_len, kippatch_t *patch);
+int kippatch_apply_set(u8 *kipdata, u64 kipdata_len, kippatchset_t *patchset);
+kippatchset_t *kippatch_find_set(u8 *kiphash, kippatchset_t *patchsets);
 pkg2_hdr_t *unpackFirmwarePackage(u8 *data);
 void pkg1_unpack(pk11_offs *offs, u8 *pkg1);
 void buildFirmwarePackage(u8 *kernel, u32 kernel_size, link_t *kips_info);
