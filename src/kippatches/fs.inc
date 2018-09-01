@@ -140,7 +140,7 @@ static kipdiff_t fs_diffs_510_nocmac[8] = {
 };
 
 static kipdiff_t fs_diffs_600_nocmac[8] = {
-  { 0xEE9E0, 4, "\x80\x0A\x00\x36", "\x1F\x20\x03\xD5" },
+  { 0x10B7F4, 4, "\x20\x0A\x00\x36", "\x1F\x20\x03\xD5" },
   { 0x10BCF8, 4, "\xA0\x03\x00\x36", "\x1F\x20\x03\xD5" },
   { 0x113934, 4, "\x60\x14\x00\x36", "\x1F\x20\x03\xD5" },
   { 0x11429C, 4, "\x60\x06\x00\x36", "\x1F\x20\x03\xD5" },
@@ -170,7 +170,7 @@ static kipdiff_t fs_diffs_600_nogc[3] = {
 };
 
 static kipdiff_t fs_diffs_600_exfat_nosigchk[3] = {
-  { 0x7C9A0, 4, "\x8E\x3E\x00\x94", "\xE0\x03\x1F\x2A" },
+  { 0x7C9A8, 4, "\x8E\x3E\x00\x94", "\xE0\x03\x1F\x2A" },
   { 0xF678C, 4, "\xC0\x03\x00\x36", "\x1F\x20\x03\xD5" },
   { 0, 0, NULL, NULL },
 };

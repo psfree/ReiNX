@@ -105,8 +105,8 @@ void patch(pk11_offs *pk11, pkg2_hdr_t *pkg2, link_t *kips) {
             }
 			case KB_FIRMWARE_VERSION_600: {
 				u8 verPattern[] = {0x00, 0x01, 0x00, 0x36, 0xFD, 0x7B, 0x41, 0xA9};
-                u8 hdrSigPattern[] = { 0x9A, 0xFF, 0xFF, 0x97, 0x80, 0x00, 0x00, 0x36};
-                u8 sha2Pattern[] = {0x81, 0x00, 0x80, 0x72, 0xB5, 0xFB, 0xFF, 0x97};
+                u8 hdrSigPattern[] = { 0x9F, 0x72, 0x19, 0xB9, 0xE1, 0x03, 0x1F, 0xAA};
+                u8 sha2Pattern[] = {0xB5, 0xFB, 0xFF, 0x97, 0xE0, 0x03, 0x01, 0x32};
 
                 ver_ptr = (uPtr*)memsearch((void *)pk11->secmon_base, 0x10000, verPattern, sizeof(verPattern));
                 pk21_ptr = (uPtr*)((u32)ver_ptr - 0xC);
@@ -137,7 +137,7 @@ void patch(pk11_offs *pk11, pkg2_hdr_t *pkg2, link_t *kips) {
         *hdrsig_ptr = NOP;
         *sha2_ptr = NOP;
     }
-    
+	
     //Patch Kernel
     if(!customKern) {
         u32 crc = crc32c(pkg2->data, pkg2->sec_size[PKG2_SEC_KERNEL]);
