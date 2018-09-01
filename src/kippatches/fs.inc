@@ -139,7 +139,7 @@ static kipdiff_t fs_diffs_510_nocmac[8] = {
   { 0, 0, NULL, NULL },
 };
 
-static kipdiff_t fs_diffs_600_nocmac[8] = {
+static kipdiff_t fs_diffs_600_exfat_nocmac[8] = {
   { 0x10B7F4, 4, "\x20\x0A\x00\x36", "\x1F\x20\x03\xD5" },
   { 0x10BCF8, 4, "\xA0\x03\x00\x36", "\x1F\x20\x03\xD5" },
   { 0x113934, 4, "\x60\x14\x00\x36", "\x1F\x20\x03\xD5" },
@@ -150,6 +150,17 @@ static kipdiff_t fs_diffs_600_nocmac[8] = {
   { 0, 0, NULL, NULL },
 };
 
+//exfat offsets are simply shifted by + 0xB700
+static kipdiff_t fs_diffs_600_nocmac[8] = {
+  { 0x1000F4, 4, "\x20\x0A\x00\x36", "\x1F\x20\x03\xD5" },
+  { 0x1005F8, 4, "\xA0\x03\x00\x36", "\x1F\x20\x03\xD5" },
+  { 0x108234, 4, "\x60\x14\x00\x36", "\x1F\x20\x03\xD5" },
+  { 0x108B9C, 4, "\x60\x06\x00\x36", "\x1F\x20\x03\xD5" },
+  { 0x108CDC, 4, "\x20\x07\x00\x36", "\x1F\x20\x03\xD5" },
+  { 0x10FA28, 4, "\xC0\x05\x00\x36", "\x1F\x20\x03\xD5" },
+  { 0x10FB54, 4, "\xC0\x06\x00\x36", "\x1F\x20\x03\xD5" },
+  { 0, 0, NULL, NULL },
+};
 
 static kipdiff_t fs_diffs_510_nogc[3] = {
   { 0xCF794, 4, "\x14\x40\x80\x52", "\x14\x80\x80\x52" },
