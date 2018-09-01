@@ -103,22 +103,21 @@ void patch(pk11_offs *pk11, pkg2_hdr_t *pkg2, link_t *kips) {
                 sha2_ptr = (uPtr*)memsearch((void *)pk11->secmon_base, 0x10000, sha2Pattern, sizeof(sha2Pattern));
                 break;
             }
-			case KB_FIRMWARE_VERSION_600: {
+			case KB_FIRMWARE_VERSION_500: {
 				u8 verPattern[] = {0x00, 0x01, 0x00, 0x36, 0xFD, 0x7B, 0x41, 0xA9};
-                u8 hdrSigPattern[] = { 0x9F, 0x72, 0x19, 0xB9, 0xE1, 0x03, 0x1F, 0xAA};
-                u8 sha2Pattern[] = {0xB5, 0xFB, 0xFF, 0x97, 0xE0, 0x03, 0x01, 0x32};
-
+                u8 hdrSigPattern[] = {0x86, 0xFE, 0xFF, 0x97, 0x80, 0x00, 0x00, 0x36};
+                u8 sha2Pattern[] = {0xF2, 0xFB, 0xFF, 0x97, 0xE0, 0x03};
+				
                 ver_ptr = (uPtr*)memsearch((void *)pk11->secmon_base, 0x10000, verPattern, sizeof(verPattern));
                 pk21_ptr = (uPtr*)((u32)ver_ptr - 0xC);
                 hdrsig_ptr = (uPtr*)(memsearch((void *)pk11->secmon_base, 0x10000, hdrSigPattern, sizeof(hdrSigPattern)) + 0x4);
                 sha2_ptr = (uPtr*)memsearch((void *)pk11->secmon_base, 0x10000, sha2Pattern, sizeof(sha2Pattern));
                 break;
 			}
-			case KB_FIRMWARE_VERSION_500:
             default: {
                 u8 verPattern[] = {0x00, 0x01, 0x00, 0x36, 0xFD, 0x7B, 0x41, 0xA9};
-                u8 hdrSigPattern[] = {0x86, 0xFE, 0xFF, 0x97, 0x80, 0x00, 0x00, 0x36};
-                u8 sha2Pattern[] = {0xF2, 0xFB, 0xFF, 0x97, 0xE0, 0x03};
+				u8 hdrSigPattern[] = { 0x9A, 0xFF, 0xFF, 0x97, 0x80, 0x00, 0x00, 0x36};
+				u8 sha2Pattern[] = {0x81, 0x00, 0x80, 0x72, 0xB5, 0xFB, 0xFF, 0x97};
 
                 ver_ptr = (uPtr*)memsearch((void *)pk11->secmon_base, 0x10000, verPattern, sizeof(verPattern));
                 pk21_ptr = (uPtr*)((u32)ver_ptr - 0xC);
